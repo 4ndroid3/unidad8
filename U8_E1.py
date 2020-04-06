@@ -115,7 +115,7 @@ class MainWindow: # Clase principal contenedora de todos las funciones del progr
         micursor = mibase.cursor()
         datos = self.entrada1.get(), self.entrada2.get(), self.entrada3.get()
         sql = 'INSERT INTO producto (titulo, ruta, descripcion) VALUES (%s, %s, %s)'
-        
+        micursor.execute(sql, datos)
         mibase.commit()
         print(micursor.rowcount, "Cantidad de registros agregados.")
         
