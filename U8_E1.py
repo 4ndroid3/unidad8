@@ -1,5 +1,7 @@
 from tkinter import *
 from tkinter import ttk
+from tkinter.messagebox import *
+
 import mysql.connector # Importo el conector de MySQL (antes se lo descargó con pip install mysql-connector)
               
 class MainWindow: # Clase principal contenedora de todos las funciones del programa.
@@ -113,17 +115,29 @@ class MainWindow: # Clase principal contenedora de todos las funciones del progr
             database="mi_plantilla2"
         )
         micursor = mibase.cursor()
-        datos = self.entrada1.get(), self.entrada2.get(), self.entrada3.get()
-        sql = 'INSERT INTO producto (titulo, ruta, descripcion) VALUES (%s, %s, %s)'
-        micursor.execute(sql, datos)
-        mibase.commit()
-        print(micursor.rowcount, "Cantidad de registros agregados.")
-        
-        self.entry1.delete(0, END)
-        self.entry2.delete(0, END)
-        self.entry3.delete(0, END)
-        
-        self.hacerConsulta()
+
+        if self.entry1.get() == "" and self.entry2.get() == "" and self.entry3.get() == "": # Comprueba si hay campos sin completar
+             print ("No cargaste ningun dato")                                              # y muetra un mensaje de error.
+             showerror ("Error", "No cargaste ningun dato")
+        elif self.entry1.get() == "" or self.entry2.get() == "" or self.entry3.get() == "" :
+                print ("Datos incompletos")
+                showerror ("Error", " Campos incompletos")
+        else:
+                print ("\n Nueva alta de datos")
+                print ("\n Nombre:", self.entry1.get(),"\n Apellido:", self.entry1.get(), "\n e-mail:", self.entry1.get())
+                
+                datos = self.entrada1.get(), self.entrada2.get(), self.entrada3.get()
+                sql = 'INSERT INTO producto (titulo, ruta, descripcion) VALUES (%s, %s, %s)'
+                micursor.execute(sql, datos)
+                mibase.commit()
+                print(micursor.rowcount, "Cantidad de registros agregados.")
+                
+                self.entry1.delete(0, END)
+                self.entry2.delete(0, END)
+                self.entry3.delete(0, END)
+                
+                self.hacerConsulta()
+                self.entry1.focus() # Cuando se agregan los datos vuelve al primer entry para volver a cargar otro dato.
 
     def hacerConsulta(self):
         mibase = mysql.connector.connect(
