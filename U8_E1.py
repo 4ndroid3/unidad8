@@ -7,19 +7,23 @@ import mysql.connector # Importo el conector de MySQL (antes se lo descargó con
 class MainWindow: # Clase principal contenedora de todos las funciones del programa.
     def __init__(self, root): # Constructor de la clase.
         # Creacion y Grindeado de los Frames
-        self.Frame1 = Frame(root)
-        self.Frame1.grid(row = 0, column = 0)
-        self.Frame2 = LabelFrame(root, text = 'Lista de cargados')
+        self.fondo = 'seashell3'
+        self.Frame1 = Frame(root, bg = self.fondo)
+        self.Frame1.grid(row = 0, column = 0, pady = 10)
+        self.Frame2 = LabelFrame(root, text = 'Lista de cargados', bg = self.fondo)
         self.Frame2.grid(row = 1, column = 0, columnspan = 2)
-        self.Frame3 = Frame(root)
+        self.Frame3 = Frame(root, bg = self.fondo)
         self.Frame3.grid(row = 0, column = 1)
-                
+        self.Frame4 = Frame(root, bg = self.fondo)
+        self.Frame4.grid(row = 2, column = 0, columnspan = 2)
+        
+        
         # Declaracion de los Entrys
         self.entrada1, self.entrada2, self.entrada3 = StringVar(), StringVar(), StringVar()
                 
         # Funciones armado de ventana.
         def labels(texto, fila, columna):
-            label = Label(self.Frame1, text = texto)
+            label = Label(self.Frame1, text = texto, bg = self.fondo)
             label.grid(row = fila, column = columna)
 
         def entradas(variable, fila, columna):
@@ -37,7 +41,7 @@ class MainWindow: # Clase principal contenedora de todos las funciones del progr
         self.entry3 = entradas(self.entrada3, 2, 1)
         self.entry1.focus() # Cuando inicia el programa el cursor se posiciona en este entry.
             
-        # Botones
+        # BOTONES
         botonAgregar = Button(self.Frame1, text = 'Guardar Datos', command = self.agregaraDB) # Boton para grabar datos en BD
         botonAgregar.grid(row = 3, column = 1, pady = 5)
 
@@ -46,6 +50,12 @@ class MainWindow: # Clase principal contenedora de todos las funciones del progr
 
         botonCrearTabla = Button(self.Frame3, text = 'Crear Tabla', command = self.crearTB) # Boton para crear Tabla si no existe.
         botonCrearTabla.grid(row = 0, column = 1)
+
+        botonModificarDato = Button(self.Frame4, text = 'Modificar Entrada')
+        botonModificarDato.grid(row = 0, column = 0)
+
+        botonEliminarDato = Button(self.Frame4, text = 'Eliminar Entrada', command = self.eliminarDato)
+        botonEliminarDato.grid(row = 0, column = 1)
 
         # Creacion del Treeview
         self.resumen = ttk.Treeview(self.Frame2, columns = ('#1', '#2', '#3'))
@@ -117,7 +127,7 @@ class MainWindow: # Clase principal contenedora de todos las funciones del progr
         micursor = mibase.cursor()
 
         if self.entry1.get() == "" and self.entry2.get() == "" and self.entry3.get() == "": # Comprueba si hay campos sin completar
-             print ("No cargaste ningun dato")                                              # y muetra un mensaje de error.
+             print ("No cargaste ningun dato")                                              # y muestra un mensaje de error.
              showerror ("Error", "No cargaste ningun dato")
         elif self.entry1.get() == "" or self.entry2.get() == "" or self.entry3.get() == "" :
                 print ("Datos incompletos")
@@ -162,7 +172,28 @@ class MainWindow: # Clase principal contenedora de todos las funciones del progr
                                                             # Tercer valor, pongo el texto del primer valor de lista
                                                             # valor Values, pongo el resto de las columnas.
         
+    def eliminarDato(self):
+        mibase = mysql.connector.connect(
+            host="localhost",
+            user="root",
+            passwd="",
+            database="mi_plantilla2"
+        )
+        micursor = mibase.cursor()
+        sql = "DELETE FROM producto WHERE id = %s"
+        linea = self.resumen.item(self.resumen.selection())['text'] # .item devuelve un diccionario, entonces selecciono la llave 'text'
+        dato = (linea,)                                             # para que me devuelva el valor.
+        micursor.execute(sql, dato)
+        mibase.commit()
+        print(micursor.rowcount, "Registro borrado")
+       
+        self.hacerConsulta()
+        
+    def modificarDato(self):
+        pass
+
 window = Tk()
-window.title('Ejercicio unidad 8 - Jaimovich Andrés')
+window.config(bg = 'seashell3')
+window.title('Gestion de archivos en una BD')
 principal = MainWindow(window)
 mainloop()
