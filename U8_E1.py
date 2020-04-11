@@ -102,7 +102,7 @@ class MainWindow: # Clase principal contenedora de todos las funciones del progr
                 print('Base de datos creada con Exito')
                 break
             except mysql.connector.errors.DatabaseError: # En la excepcion pongo el error de base de datos ya creada.
-                print('La Base de Datos ya está creada.')
+                self.mensaje['text'] = 'La Base de Datos ya está creada.'
                 break
             
     def crearTB(self): # Metodo para crear tabla en caso de que producto no exista.
@@ -119,7 +119,7 @@ class MainWindow: # Clase principal contenedora de todos las funciones del progr
                 print('Lista creada con Exito')
                 break
             except mysql.connector.errors.ProgrammingError: # En la excepcion pongo el error de lista ya creada.
-                print('La lista ya está creada.')
+                self.mensaje['text'] = 'La tabla ya está creada.'
                 break    
             
     def agregaraDB(self): # Metodo para agregar valores a la tabla desde los Entrys.
@@ -155,7 +155,7 @@ class MainWindow: # Clase principal contenedora de todos las funciones del progr
                 self.mensaje['text'] = 'Registro Agregado'
                 self.entry1.focus() # Cuando se agregan los datos vuelve al primer entry para volver a cargar otro dato.
 
-    def hacerConsulta(self):
+    def hacerConsulta(self): # Metodo que realiza las consultas en la BD, devuelve los valores y los pone en el Treeview
         mibase = mysql.connector.connect(
             host="localhost",
             user="root",
@@ -178,7 +178,7 @@ class MainWindow: # Clase principal contenedora de todos las funciones del progr
                                                             # Tercer valor, pongo el texto del primer valor de lista
                                                             # valor Values, pongo el resto de las columnas.
         
-    def eliminarDato(self):
+    def eliminarDato(self): # Metodo para eliminar datos de la DB
         mibase = mysql.connector.connect(
             host="localhost",
             user="root",
@@ -195,7 +195,7 @@ class MainWindow: # Clase principal contenedora de todos las funciones del progr
        
         self.hacerConsulta()
         
-    def modificarDato(self):
+    def modificarDato(self): # Metodo que crea la nueva ventana de modificacion de datos.
         # para modificar un dato en SQL debo saber los datos originales de la entrada.
         # Asique hay que pasar como parametros los datos viejos para luego modificarlos.
 
@@ -226,7 +226,8 @@ class MainWindow: # Clase principal contenedora de todos las funciones del progr
 
         botonAgregarMod = Button(self.modificarWind, text = 'Confirmar Modificacion', command = self.confirmarMod)
         botonAgregarMod.grid(row = 3, column = 0, columnspan = 2, pady = 5)
-    def confirmarMod(self):
+
+    def confirmarMod(self): # Metodo para modificar datos de la DB
         mibase = mysql.connector.connect(
             host="localhost",
             user="root",
