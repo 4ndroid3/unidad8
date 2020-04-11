@@ -1,4 +1,4 @@
-# unidad8
+# unidad8 - Curso Python 3.8 UTN
 
 Ejercicio N°8 con agregados propios para su experimentación.
 
