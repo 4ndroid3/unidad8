@@ -40,7 +40,8 @@ class MainWindow: # Clase principal contenedora de todos las funciones del progr
         self.entry2 = entradas(self.entrada2, 1, 1)
         self.entry3 = entradas(self.entrada3, 2, 1)
         self.entry1.focus() # Cuando inicia el programa el cursor se posiciona en este entry.
-            
+        
+        
         # BOTONES
         botonAgregar = Button(self.Frame1, text = 'Guardar Datos', command = self.agregaraDB) # Boton para grabar datos en BD
         botonAgregar.grid(row = 3, column = 1, pady = 5)
@@ -51,11 +52,15 @@ class MainWindow: # Clase principal contenedora de todos las funciones del progr
         botonCrearTabla = Button(self.Frame3, text = 'Crear Tabla', command = self.crearTB) # Boton para crear Tabla si no existe.
         botonCrearTabla.grid(row = 0, column = 1)
 
-        botonModificarDato = Button(self.Frame4, text = 'Modificar Entrada')
-        botonModificarDato.grid(row = 0, column = 0)
+        botonModificarDato = Button(self.Frame4, text = 'Modificar Entrada', command = self.modificarDato)
+        botonModificarDato.grid(row = 0, column = 0, pady = 10)
 
         botonEliminarDato = Button(self.Frame4, text = 'Eliminar Entrada', command = self.eliminarDato)
         botonEliminarDato.grid(row = 0, column = 1)
+
+        # Mensaje
+        self.mensaje = Label(self.Frame4, text = '', bg = self.fondo, fg = 'blue', font = ('15')) # Label que muestra mensaje de accion.
+        self.mensaje.grid(row = 1, column = 0, columnspan = 2, sticky = W + E, pady = 5)
 
         # Creacion del Treeview
         self.resumen = ttk.Treeview(self.Frame2, columns = ('#1', '#2', '#3'))
@@ -147,6 +152,7 @@ class MainWindow: # Clase principal contenedora de todos las funciones del progr
                 self.entry3.delete(0, END)
                 
                 self.hacerConsulta()
+                self.mensaje['text'] = 'Registro Agregado'
                 self.entry1.focus() # Cuando se agregan los datos vuelve al primer entry para volver a cargar otro dato.
 
     def hacerConsulta(self):
@@ -159,7 +165,7 @@ class MainWindow: # Clase principal contenedora de todos las funciones del progr
         micursor = mibase.cursor()
         sql = 'SELECT * FROM producto'
         micursor.execute(sql)
-        resultado = micursor.fetchall()
+        resultado = micursor.fetchall() # Devuelve una lista de Tuplas con los datos.
         
         # cleaning Table 
         records = self.resumen.get_children()
@@ -185,12 +191,62 @@ class MainWindow: # Clase principal contenedora de todos las funciones del progr
         dato = (linea,)                                             # para que me devuelva el valor.
         micursor.execute(sql, dato)
         mibase.commit()
-        print(micursor.rowcount, "Registro borrado")
+        self.mensaje['text'] = micursor.rowcount, "Registro borrado"
        
         self.hacerConsulta()
         
     def modificarDato(self):
-        pass
+        # para modificar un dato en SQL debo saber los datos originales de la entrada.
+        # Asique hay que pasar como parametros los datos viejos para luego modificarlos.
+
+        self.modificarWind = Toplevel() # Nueva ventana emergente para modificar datos.
+        self.modificarWind.config(bg = self.fondo)
+        # Declaracion de los Entrys
+        self.entradaMod1, self.entradaMod2, self.entradaMod3 = StringVar(), StringVar(), StringVar()
+                
+        # Funciones armado de ventana.
+        def labels(texto, fila, columna):
+            label = Label(self.modificarWind, text = texto, bg = self.fondo)
+            label.grid(row = fila, column = columna, padx = 5)
+
+        def entradas(variable, fila, columna):
+            entry = Entry(self.modificarWind, textvariable = variable)
+            entry.grid(row = fila, column = columna, padx = 5)
+            return entry
+        
+        # Pasaje de valores para Funciones
+        labels('Titulo', 0, 0)
+        labels('Ruta', 1, 0)
+        labels('Descripcion', 2, 0)
+                
+        self.entryMod1 = entradas(self.entradaMod1, 0, 1)
+        self.entryMod2 = entradas(self.entradaMod2, 1, 1)
+        self.entryMod3 = entradas(self.entradaMod3, 2, 1)
+        self.entryMod1.focus()
+
+        botonAgregarMod = Button(self.modificarWind, text = 'Confirmar Modificacion', command = self.confirmarMod)
+        botonAgregarMod.grid(row = 3, column = 0, columnspan = 2, pady = 5)
+    def confirmarMod(self):
+        mibase = mysql.connector.connect(
+            host="localhost",
+            user="root",
+            passwd="",
+            database="mi_plantilla2"
+        )
+        micursor = mibase.cursor()
+        tituloViejo = self.resumen.item(self.resumen.selection())['values'][0] 
+        rutaVieja = self.resumen.item(self.resumen.selection())['values'][1]
+        descripVieja = self.resumen.item(self.resumen.selection())['values'][2]
+        
+        sql = ('UPDATE producto SET titulo = %s, ruta = %s, descripcion = %s' 
+               'WHERE titulo = %s AND ruta = %s AND descripcion = %s')
+
+        parametros = (self.entradaMod1.get(), self.entradaMod2.get(), self.entradaMod3.get(), tituloViejo, rutaVieja, descripVieja)
+        micursor.execute(sql, parametros)
+        mibase.commit()
+        self.mensaje['text'] = micursor.rowcount, "Registro Modificado."
+        self.hacerConsulta()
+        self.modificarWind.destroy()
 
 window = Tk()
 window.config(bg = 'seashell3')
